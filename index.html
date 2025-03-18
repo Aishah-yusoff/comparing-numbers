@@ -1,0 +1,172 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Number Comparison Game</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            height: 100vh;
+            margin: 0;
+            background-color: #f0f0f0;
+        }
+        #game-container {
+            background-color: white;
+            padding: 20px;
+            border-radius: 10px;
+            box-shadow: 0 0 10px rgba(0,0,0,0.1);
+            text-align: center;
+            max-width: 600px;
+            width: 90%;
+        }
+        #game-area {
+            border: 2px dotted #333;
+            padding: 20px;
+            margin-bottom: 20px;
+        }
+        select {
+            margin: 5px;
+            padding: 5px;
+            font-size: 16px;
+        }
+        button {
+            margin-top: 10px;
+            padding: 5px 10px;
+            font-size: 16px;
+            cursor: pointer;
+        }
+        #score, #question-number, #message {
+            margin-top: 10px;
+        }
+        .modal {
+            display: none;
+            position: fixed;
+            z-index: 1;
+            left: 0;
+            top: 0;
+            width: 100%;
+            height: 100%;
+            background-color: rgba(0,0,0,0.4);
+        }
+        .modal-content {
+            background-color: #fefefe;
+            margin: 15% auto;
+            padding: 20px;
+            border: 1px solid #888;
+            width: 80%;
+            max-width: 500px;
+            text-align: center;
+        }
+    </style>
+</head>
+<body>
+    <div id="game-container">
+        <div id="game-area">
+            <h2>Number Comparison Game</h2>
+            <p id="question"></p>
+            <div id="answer-area"></div>
+            <button onclick="checkAnswer()">Submit</button>
+        </div>
+        <div id="question-number">Question 1 of 10</div>
+        <div id="score">Score: 0</div>
+        <div id="message"></div>
+    </div>
+
+    <div id="feedback-modal" class="modal">
+        <div class="modal-content">
+            <p id="feedback-message"></p>
+            <p id="correct-answer"></p>
+            <button onclick="closeFeedbackModal()">Next Question</button>
+        </div>
+    </div>
+
+    <div id="end-game-modal" class="modal">
+        <div class="modal-content">
+            <h2>Game Over</h2>
+            <p id="final-score"></p>
+            <button onclick="restartGame()">Play Again</button>
+        </div>
+    </div>
+
+    <script>
+        let score = 0;
+        let currentAnswer;
+        let currentQuestionNumber = 1;
+        const totalQuestions = 10;
+
+        function generateQuestion() {
+            let num1, num2;
+            do {
+                num1 = Math.floor(Math.random() * 10000) + 1;
+                num2 = Math.floor(Math.random() * 10000) + 1;
+            } while (num1 === num2);
+            const question = `${num1} ____ ${num2}`;
+            const answer = num1 > num2 ? '>' : '<';
+            const answerArea = `
+                <select id="comparison">
+                    <option value="">Select</option>
+                    <option value=">">></option>
+                    <option value="<"><</option>
+                </select>
+            `;
+            return { question, answer, answerArea };
+        }
+
+        function newQuestion() {
+            if (currentQuestionNumber > totalQuestions) {
+                endGame();
+                return;
+            }
+            const { question, answer, answerArea } = generateQuestion();
+            document.getElementById('question').textContent = question;
+            document.getElementById('answer-area').innerHTML = answerArea;
+            document.getElementById('question-number').textContent = `Question ${currentQuestionNumber} of ${totalQuestions}`;
+            currentAnswer = answer;
+        }
+
+        function checkAnswer() {
+            const userAnswer = document.getElementById('comparison').value;
+            let feedbackMessage;
+            if (userAnswer === currentAnswer) {
+                score++;
+                feedbackMessage = 'Correct! Well done!';
+            } else {
+                feedbackMessage = 'Incorrect. Keep trying!';
+            }
+            document.getElementById('score').textContent = `Score: ${score}`;
+            showFeedbackModal(feedbackMessage, currentAnswer);
+        }
+
+        function showFeedbackModal(message, correctAnswer) {
+            document.getElementById('feedback-message').textContent = message;
+            document.getElementById('correct-answer').textContent = `The correct answer is: ${correctAnswer}`;
+            document.getElementById('feedback-modal').style.display = 'block';
+        }
+
+        function closeFeedbackModal() {
+            document.getElementById('feedback-modal').style.display = 'none';
+            currentQuestionNumber++;
+            newQuestion();
+        }
+
+        function endGame() {
+            document.getElementById('final-score').textContent = `Your final score is: ${score} out of ${totalQuestions}`;
+            document.getElementById('end-game-modal').style.display = 'block';
+        }
+
+        function restartGame() {
+            score = 0;
+            currentQuestionNumber = 1;
+            document.getElementById('score').textContent = 'Score: 0';
+            document.getElementById('end-game-modal').style.display = 'none';
+            newQuestion();
+        }
+
+        newQuestion();
+    </script>
+</body>
+</html>
